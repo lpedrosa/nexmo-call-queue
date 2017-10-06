@@ -1,5 +1,7 @@
-from Queue import Empty, Full, Queue
-from threading import Lock
+try:
+    from Queue import Empty, Full, Queue
+except ImportError:
+    from queue import Empty, Full, Queue
 
 
 class QueueServiceError(Exception):

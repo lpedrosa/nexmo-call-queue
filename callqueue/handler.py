@@ -1,7 +1,7 @@
 import logging
 
-from database import DatabaseError
-from queueservice import QueueFullError
+from callqueue.database import DatabaseError
+from callqueue.queueservice import QueueFullError
 
 
 class CallerManager(object):

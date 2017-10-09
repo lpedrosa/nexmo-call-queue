@@ -4,7 +4,7 @@ from callqueue.database import DatabaseError
 from callqueue.queueservice import QueueFullError
 
 
-class CallerManager(object):
+class WorkflowManager(object):
 
     def __init__(self, database, queue_service, logger=None):
         self._database = database
@@ -41,12 +41,6 @@ class CallerManager(object):
 
     def _failure_ncco(self):
         return [{'action': 'hangup'}]
-
-
-class AgentManager(object):
-
-    def __init__(self):
-        pass
 
     def transfer_agent(self, agent, caller):
         # make call to agent

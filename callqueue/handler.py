@@ -24,7 +24,11 @@ class WorkflowManager(object):
             queue_position = self._queue.put(call_id)
         except QueueFullError:
             # this is okay
-            self._logger.warn('failed to queue call {}'.format(call_id))
+            self._logger.warning('failed to queue call {}'.format(call_id))
+            try:
+                self._database.delete_call(call_id)
+            except DatabaseError:
+                self._logger.warning('failed to delete call {}'.format(call_id))
             return self._failure_ncco()
 
         return self._greet_ncco(queue_position)

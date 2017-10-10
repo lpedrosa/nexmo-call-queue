@@ -23,8 +23,13 @@ def db_failing_manager():
 
 
 @pytest.fixture
-def queue_full_manager():
+def database():
     database = InMemoryDatabase()
+    return database
+
+
+@pytest.fixture
+def queue_full_manager(database):
     full_queue = QueueService(max_calls=1)
     full_queue.put('cid')
     return WorkflowManager(database, full_queue)
@@ -55,3 +60,11 @@ def test_greet_hangup_when_queue_full(queue_full_manager):
     ncco = queue_full_manager.greet_caller(caller)
 
     assert ncco[0]['action'] == 'hangup'
+
+
+def test_dont_store_call_when_queue_full(queue_full_manager, database):
+    caller = {'call_id': 'cid'}
+
+    queue_full_manager.greet_caller(caller)
+
+    assert database.retrieve_call(caller['call_id']) == None

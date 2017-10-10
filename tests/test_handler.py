@@ -1,13 +1,18 @@
 import pytest
 
 from callqueue.database import Database, DatabaseError, InMemoryDatabase
-from callqueue.handler import WorkflowManager
+from callqueue.handler import WorkflowManager, CallStates
 from callqueue.queueservice import QueueService
 
 
 @pytest.fixture
-def workflow_manager():
+def database():
     database = InMemoryDatabase()
+    return database
+
+
+@pytest.fixture
+def workflow_manager(database):
     queue_service = QueueService()
     return WorkflowManager(database, queue_service)
 
@@ -23,17 +28,14 @@ def db_failing_manager():
 
 
 @pytest.fixture
-def database():
-    database = InMemoryDatabase()
-    return database
-
-
-@pytest.fixture
 def queue_full_manager(database):
     full_queue = QueueService(max_calls=1)
     full_queue.put('cid')
     return WorkflowManager(database, full_queue)
 
+##############################
+# greet_caller tests
+##############################
 
 def test_greet_and_queue_when_everything_is_okay(workflow_manager):
     caller = {'call_id': 'cid'}
@@ -66,5 +68,19 @@ def test_dont_store_call_when_queue_full(queue_full_manager, database):
     caller = {'call_id': 'cid'}
 
     queue_full_manager.greet_caller(caller)
+
+    assert database.retrieve_call(caller['call_id']) == None
+
+
+##############################
+# resolve_state tests
+##############################
+
+@pytest.mark.parametrize('state', CallStates.final)
+def test_delete_call_when_is_final_state(workflow_manager, database, state):
+    caller = {'call_id': 'cid'}
+
+    workflow_manager.greet_caller(caller)
+    workflow_manager.resolve_state(caller['call_id'], state)
 
     assert database.retrieve_call(caller['call_id']) == None

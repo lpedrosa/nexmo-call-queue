@@ -46,7 +46,19 @@ class WorkflowManager(object):
     def _failure_ncco(self):
         return [{'action': 'hangup'}]
 
+    def resolve_state(self, call_id, state):
+        if CallStates.is_final(state):
+            self._database.delete_call(call_id)
+
     def transfer_agent(self, agent, caller):
         # make call to agent
         # issue transfer of caller to agent's conversation
         pass
+
+
+class CallStates(object):
+    final = ['completed', 'timeout', 'failed', 'rejected', 'cancelled', 'busy']
+
+    @staticmethod
+    def is_final(state):
+        return state in CallStates.final
